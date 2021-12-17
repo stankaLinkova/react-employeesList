@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "jquery/dist/jquery.min.js";
 import "bootstrap/dist/js/bootstrap.min.js";
 import { getPositions, getContractTypes } from "../services/employeeService";
+import "../App.css";
 
 class FilterComponent extends Component {
   constructor(props) {
@@ -24,36 +25,48 @@ class FilterComponent extends Component {
   }
 
   async componentDidMount() {
-    try {
-      //natiahneme pozicie a contracty z API, potom ich usporiadame aby sme ich take mohli zobrazovat v dropdowne
-      const positions = await getPositions();
-      const sortedPositions = positions.data.sort((a, b) => (a.name > b.name) ? 1 : -1);
-      this.setState({ positions: sortedPositions });
+    //natiahneme pozicie a contracty z API, potom ich usporiadame aby sme ich take mohli zobrazovat v dropdowne
+    const positions = await getPositions();
+    const sortedPositions = positions.data.sort((a, b) =>
+      a.name > b.name ? 1 : -1
+    );
+    this.setState({ positions: sortedPositions });
 
-      const contractTypes = await getContractTypes();
-      const sortedContracts = contractTypes.data.sort((a, b) => (a.name > b.name) ? 1 : -1);
-      this.setState({ contractTypes: sortedContracts });
-    } catch (error) {}
+    const contractTypes = await getContractTypes();
+    const sortedContracts = contractTypes.data.sort((a, b) =>
+      a.name > b.name ? 1 : -1
+    );
+    this.setState({ contractTypes: sortedContracts });
   }
 
   //tato funkcia sa vykona, ak si vyberieme jeden typ pozicie, podla ktorej chceme filtorvat zamestnancov
   handlePositions = (e) => {
-    this.setState({ positionSelected: e.target.value });
-    const positionId = this.state.positions.filter(
-      (pos) => pos.name === e.target.value
-    )[0].id; 
-    //ak sme ziskali pozitionId, posleme ho parent componentu "Listing"
-    this.props.positionFiltering(positionId);
+    if (e.target.value === "all") {
+      this.setState({ positionSelected: "" });
+      this.props.positionFiltering(e.target.value);
+    } else {
+      this.setState({ positionSelected: e.target.value });
+      const positionId = this.state.positions.filter(
+        (pos) => pos.name === e.target.value
+      )[0].id;
+      //ak sme ziskali pozitionId, posleme ho parent componentu "Listing"
+      this.props.positionFiltering(positionId);
+    }
   };
 
   //funkcia sa spusti, ak sme si vybrali jeden typ contractu na filtrovanie
   handleContracts = (e) => {
-    this.setState({ contractSelected: e.target.value });
-    const contractId = this.state.contractTypes.filter(
-      (con) => con.name === e.target.value
-    )[0].id;
-    //posuvame contractId parentovi
-    this.props.contractFiltering(contractId);
+    if (e.target.value === "all") {
+      this.setState({ contractSelected: "" });
+      this.props.contractFiltering(e.target.value);
+    } else {
+      this.setState({ contractSelected: e.target.value });
+      const contractId = this.state.contractTypes.filter(
+        (con) => con.name === e.target.value
+      )[0].id;
+      //posuvame contractId parentovi
+      this.props.contractFiltering(contractId);
+    }
   };
 
   //ak vyberame active/inactive/all
@@ -80,6 +93,11 @@ class FilterComponent extends Component {
   // touto funkciou vytvarame dynamicky options v dropdown menu
   createPositionMenu = () => {
     let itemsPositions = [];
+    itemsPositions.push(
+      <option className="dropdown-item" key={0} value={"all"}>
+        Všetci
+      </option>
+    );
     this.state.positions.map((position) =>
       itemsPositions.push(
         <option
@@ -97,6 +115,11 @@ class FilterComponent extends Component {
   //dynamicky vytvarame options podla velkosti contractTypes pola
   createContractMenu = () => {
     let itemsContracts = [];
+    itemsContracts.push(
+      <option className="dropdown-item" key={0} value={"all"}>
+        Všetci
+      </option>
+    );
     this.state.contractTypes.map((contract) =>
       itemsContracts.push(
         <option
@@ -118,10 +141,15 @@ class FilterComponent extends Component {
           <div className="row">
             <div className="col">
               <div>
+                <label>Zvoliť pozíciu: </label>
                 <select
                   className="btn btn-secondary dropdown-toggle"
                   title="Positions"
-                  value={this.state.positionSelected}
+                  value={
+                    this.state.positionSelected === ""
+                      ? "all"
+                      : this.state.positionSelected
+                  }
                   onChange={this.handlePositions}
                 >
                   {this.createPositionMenu()}
@@ -131,10 +159,15 @@ class FilterComponent extends Component {
 
             <div className="col">
               <div>
+                <label>Zvoliť typ zmluvy: </label>
                 <select
                   className="btn btn-secondary dropdown-toggle"
                   title="Contracts"
-                  value={this.state.contractSelected}
+                  value={
+                    this.state.contractSelected === ""
+                      ? "all"
+                      : this.state.contractSelected
+                  }
                   onChange={this.handleContracts}
                 >
                   {this.createContractMenu()}
@@ -143,6 +176,7 @@ class FilterComponent extends Component {
             </div>
             <div className="col">
               <div>
+                <label>Zvoliť aktívni/neaktívni/všetci: </label>
                 <select
                   className="btn btn-secondary dropdown-toggle"
                   title="Active"
@@ -150,15 +184,15 @@ class FilterComponent extends Component {
                   onChange={this.handleActive}
                 >
                   <option className="dropdown-item" key={1} value={"all"}>
-                    All
+                    Všetci
                   </option>
 
                   <option className="dropdown-item" key={2} value={"active"}>
-                    Active
+                    Aktívni
                   </option>
 
                   <option className="dropdown-item" key={3} value={"inactive"}>
-                    Inactive
+                    Neaktívni
                   </option>
                 </select>
               </div>
@@ -168,18 +202,12 @@ class FilterComponent extends Component {
             <div className="row">
               <div className="col"></div>
               <div className="col">
-                <div
-                  className="form-floating"
+                <input
+                  className="field"
+                  placeholder="Filter pre stĺpec 'Meno'"
                   value={this.state.textSelected}
                   onChange={this.handleTextChange}
-                >
-                  <textarea
-                    className="form-control"
-                    placeholder=""
-                    id="floatingTextarea"
-                  ></textarea>
-                  <label>Filter</label>
-                </div>
+                />
               </div>
               <div className="col"></div>
             </div>
@@ -194,7 +222,7 @@ class FilterComponent extends Component {
               className="btn btn-secondary"
               onClick={this.handleClearFilter}
             >
-              Clear Filter
+              Vyčistiť filter
             </button>
           </div>
         )}

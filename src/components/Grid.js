@@ -23,12 +23,12 @@ class Grid extends Component {
         sortable: true,
       },
       {
-        name: "Name",
+        name: "Meno",
         selector: (row) => row.surname + " " + row.name,
         sortable: true,
       },
       {
-        name: "Position",
+        name: "Pozícia",
         selector: (row) =>
           this.state.positions.map((position) => {
             if (position.id === row.positionId) {
@@ -40,7 +40,7 @@ class Grid extends Component {
         sortable: true,
       },
       {
-        name: "Current Contract",
+        name: "Aktívna zmluva",
         selector: (row) => this.addContract(row),
       },
     ];
@@ -50,24 +50,22 @@ class Grid extends Component {
   }
 
   async componentDidMount() {
-    try {
-      const employees = await getEmployees();
-      const sortedEmployees = employees.data.sort((a, b) =>
-        a.surname > b.surname
+    const employees = await getEmployees();
+    const sortedEmployees = employees.data.sort((a, b) =>
+      a.surname > b.surname
+        ? 1
+        : a.surname === b.surname
+        ? a.name > b.name
           ? 1
-          : a.surname === b.surname
-          ? a.name > b.name
-            ? 1
-            : -1
           : -1
-      );
-      this.setState({ items: sortedEmployees });
+        : -1
+    );
+    this.setState({ items: sortedEmployees });
 
-      const positions = await getPositions();
-      this.setState({ positions: positions.data });
+    const positions = await getPositions();
+    this.setState({ positions: positions.data });
 
-      this.setState({ isLoaded: true });
-    } catch (error) {}
+    this.setState({ isLoaded: true });
   }
 
   //funkcia na vytvorenie pola contractov pre daneho zamestnanca
@@ -130,8 +128,12 @@ class Grid extends Component {
     if (this.props.textFiltered !== "") {
       employees = employees.filter(
         (item) =>
-          item.name.includes(this.props.textFiltered) ||
-          item.surname.includes(this.props.textFiltered)
+          item.name
+            .toLowerCase()
+            .includes(this.props.textFiltered.toLowerCase()) ||
+          item.surname
+            .toLowerCase()
+            .includes(this.props.textFiltered.toLowerCase())
       );
     }
 
@@ -149,7 +151,7 @@ class Grid extends Component {
             <Navigate to={"/detail/" + this.state.employeesId} />
           )}
           <DataTable
-            title={"EMPLOYEES"}
+            title={"ZAMESTNANCI"}
             columns={this.columns}
             data={this.handleEmployeesTable()}
             highlightOnHover

@@ -22,11 +22,19 @@ class Listing extends Component {
   }
 
   handleGridPositionChange = (pos) => {
-    this.setState({ position: pos });
+    if (pos === "all") {
+      this.setState({ position: "" });
+    } else {
+      this.setState({ position: pos });
+    }
   };
 
   handleGridContractChange = (contr) => {
-    this.setState({ contract: contr });
+    if (contr === "all") {
+      this.setState({ contract: "" });
+    } else {
+      this.setState({ contract: contr });
+    }
   };
 
   handleGridActiveChange = (active) => {

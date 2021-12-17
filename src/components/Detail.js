@@ -29,7 +29,7 @@ class Detail extends Component {
         sortable: true,
       },
       {
-        name: "Contract Type",
+        name: "Typ zmluvy",
         selector: (row) =>
           this.state.contractTypes.map((contract) => {
             if (contract.id === row.typeId) {
@@ -41,12 +41,12 @@ class Detail extends Component {
         sortable: true,
       },
       {
-        name: "Contract From",
+        name: "Začiatok zmluvy",
         selector: (row) => new Date(row.from).toLocaleDateString("sk-SK"),
         sortable: true,
       },
       {
-        name: "Contract To",
+        name: "Koniec zmluvy",
         selector: (row) =>
           row.to !== null
             ? new Date(row.to).toLocaleDateString("sk-SK")
@@ -64,38 +64,36 @@ class Detail extends Component {
 
   // ked nastane component did mount, nacitame potrebne data z API
   async componentDidMount() {
-    try {
-      //ziskame id zamestnanca
-      const id = window.location.pathname.split("/")[2];
+    //ziskame id zamestnanca
+    const id = window.location.pathname.split("/")[2];
 
-      //ziskame zamestnanca a utriedime si jeho contracty od najnovsej
-      const person = await getEmployeeById(id);
-      const sortedContracts = person.data.contracts.sort((a, b) =>
-        a.from < b.from ? 1 : -1
-      );
-      this.setState({ items: sortedContracts });
-      const name = person.data.surname + " " + person.data.name;
-      this.setState({ name: name });
-      this.setState({ id: person.data.id });
+    //ziskame zamestnanca a utriedime si jeho contracty od najnovsej
+    const person = await getEmployeeById(id);
+    const sortedContracts = person.data.contracts.sort((a, b) =>
+      a.from < b.from ? 1 : -1
+    );
+    this.setState({ items: sortedContracts });
+    const name = person.data.surname + " " + person.data.name;
+    this.setState({ name: name });
+    this.setState({ id: person.data.id });
 
-      //potrebujeme ziskat aj pozicie podla id
-      const positions = await getPositions();
-      const positionP = positions.data.map((position) =>
-        position.id === person.data.positionId ? position.name : false
-      );
+    //potrebujeme ziskat aj pozicie podla id
+    const positions = await getPositions();
+    const positionP = positions.data.map((position) =>
+      position.id === person.data.positionId ? position.name : false
+    );
 
-      //contracty
-      const contractTypes = await getContractTypes();
-      this.setState({ contractTypes: contractTypes.data });
+    //contracty
+    const contractTypes = await getContractTypes();
+    this.setState({ contractTypes: contractTypes.data });
 
-      this.setState({ position: positionP });
-      this.setState({ isLoaded: true });
-    } catch (error) {}
+    this.setState({ position: positionP });
+    this.setState({ isLoaded: true });
   }
 
   render() {
     if (!this.state.isLoaded) {
-      return <div>Loading...</div>;
+      return <div>Načítavanie...</div>;
     } else {
       return (
         //ak mame data nacitane, mozeme ich zobrazit do tabulky
@@ -103,8 +101,8 @@ class Detail extends Component {
           {this.state.goBack && <Navigate to="/" />}
           <div>
             <p>ID: {this.state.id} </p>
-            <p>Name: {this.state.name}</p>
-            <p>Position: {this.state.position} </p>
+            <p>Meno: {this.state.name}</p>
+            <p>Pozícia: {this.state.position} </p>
           </div>
 
           <DataTable
@@ -123,7 +121,7 @@ class Detail extends Component {
                   className="btn btn-secondary"
                   onClick={this.handleButton}
                 >
-                  Go back to all employees
+                  Späť na všetkých zamestnancov
                 </button>
               </div>
               <div className="col"></div>
