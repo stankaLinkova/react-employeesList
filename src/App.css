@@ -36,3 +36,14 @@
     transform: rotate(360deg);
   }
 }
+
+label {
+  color: #2b2a69;
+  font-weight: bold;
+  display: list-item;
+  width: 200px;
+  height: 100px;
+  float: left;
+}
+
+
